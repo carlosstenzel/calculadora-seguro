@@ -1,0 +1,210 @@
+<html>
+
+<head>
+    <title></title>
+    <meta content="">
+    <style></style>
+</head>
+
+<body>
+
+    <div>
+        <h1>Cálculo de Seguro-Desemprego</h1>
+        <p class="subtitle">
+            O Seguro Desemprego é a assistência financeira temporária ao trabalhador dispensado sem justa causa.
+        </p>
+    </div>
+    <section id="calculo">
+        <h2 id="calculoHeading">
+            Preencha todos os campos abaixo e clique em Calcular.
+        </h2>
+        <form action="" method="post">
+            <div class="calculoFormElement clearfix">
+                <label class="multipleLines floatLeft fullWidth"><strong>Quantas vezes você já solicitou o seguro
+                        desemprego?</strong></label>
+                <label for="nenhuma" class="floatLeft inheritWidth leftPadding"><input type="radio"
+                        name="solicitacaoAnterior" id="nenhuma" value="0" checked=""><strong>Nenhuma</strong></label>
+                <label for="umavez" class="floatLeft inheritWidth"><input type="radio" name="solicitacaoAnterior"
+                        id="umavez" value="1"><strong>Uma</strong></label>
+                <label for="duasvezes" class="inheritWidth floatLeft"><input type="radio" name="solicitacaoAnterior"
+                        id="duasvezes" value="2"><strong>Duas ou Mais</strong></label>
+            </div>
+            <div class="calculoFormElement clearfix">
+                <label for="ultimoSalario" class="floatLeft"><strong>Último Salário</strong></label>
+                <input type="text" class="money" required name="ultimoSalario" id="ultimoSalario" placeholder="0,00">
+
+            </div>
+            <div class="calculoFormElement clearfix">
+                <label for="penultimoSalario" class="floatLeft"><strong>Penúltimo Salário</strong></label>
+                <input type="text" class="money" required name="penultimoSalario" id="penultimoSalario"
+                    placeholder="0,00">
+
+            </div>
+            <div class="calculoFormElement clearfix">
+                <label for="antepenultimoSalario" class="floatLeft"><strong>Antepenúltimo Salário</strong></label>
+                <input type="text" class="money" required name="antepenultimoSalario" id="antepenultimoSalario"
+                    placeholder="0,00">
+
+            </div>
+            <div class="calculoFormElement clearfix">
+                <label for="mesesTrabalhadosUltimos36" class="floatLeft"><strong>Meses trabalhados até a
+                        dispensa</strong></label>
+                <input type="text" required name="mesesTrabalhadosUltimos36" id="mesesTrabalhadosUltimos36"
+                    placeholder="0">
+
+            </div>
+        </form>
+        <a title="Calcular" href="#" id="calcularBtn" class="greenButton">Calcule</a>
+    </section>
+    <section id="resultadoPositivo" class="resultado seguroDesemprego clearfix" style="display: none;">
+        <h2>Resultado do seu cálculo</h2>
+        <div class="floatLeft clearfix">
+            <p>
+                <strong>Você tem direito a:</strong>
+            </p>
+            <p>
+                <strong id="numeroParcelas" class="floatLeft"></strong> <strong
+                    class="parcelasMensais floatLeft">parcelas<br>mensais</strong>
+            </p>
+        </div>
+        <div class="floatRight">
+            <p>
+                <strong>No valor de:</strong>
+            </p>
+            <p>
+                R$ <strong id="valor" class="valor"></strong>
+            </p>
+        </div>
+        <div id="aviso">
+            <p id="avisop">* Os valores demonstrados são estimativas, podendo ter variação com o cálculo feito pelo
+                Ministério do Trabalho e Emprego.</p>
+        </div>
+
+    </section>
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
+        integrity="sha256-pasqAKBDmFT4eHoN2ndd6lN370kFiGUFyTiUHWhU7k8=" crossorigin="anonymous"></script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js'></script>
+    <script>
+        $('.money').mask('000.000.000.000.000,00', {
+            reverse: true
+        });
+        $('#calcularBtn').on('click', function () {
+            $('#resultadoPositivo').css("display", "none");
+            var solicitacoesAnteriores = $("input[name='solicitacaoAnterior']:checked").val();
+            var ultimoSalario = parseFloat($('#ultimoSalario').val());
+            var penultimoSalario = parseFloat($('#penultimoSalario').val());
+            var antepenultimoSalario = parseFloat($('#antepenultimoSalario').val());
+            var mesesTrabalhados = $('#mesesTrabalhadosUltimos36').val();
+
+            var salarioMinimo = 998.00;
+            var faixaIntermediaria = 1531.02;
+            var valorLimite = 1735.29;
+
+            var
+                parcelas,
+                salarioMedio,
+                valor;
+
+            valor = 0;
+            parcelas = 0;
+
+
+            if (penultimoSalario == 0 && antepenultimoSalario == 0) {
+                salarioMedio = ultimoSalario;
+            } else if (penultimoSalario != 0 && antepenultimoSalario != 0) {
+                salarioMedio = (ultimoSalario + penultimoSalario + antepenultimoSalario) / 3;
+            } else if (penultimoSalario != 0) {
+                salarioMedio = (ultimoSalario + penultimoSalario) / 2;
+            } else if (antepenultimoSalario != 0) {
+                salarioMedio = (ultimoSalario + antepenultimoSalario) / 2;
+            }
+
+            if (
+                (solicitacoesAnteriores == 0 && mesesTrabalhados >= 12) ||
+                (solicitacoesAnteriores == 1 && mesesTrabalhados >= 9) ||
+                (solicitacoesAnteriores == 2 && mesesTrabalhados >= 6)
+            ) {
+                valor = Math.round10(Math.min(salarioMedio, faixaIntermediaria) * 0.8, -2);
+
+                if (salarioMedio * 100 > faixaIntermediaria * 100) {
+                    valor += Math.round10((salarioMedio - faixaIntermediaria) * 0.5, -2);
+                }
+
+                if (valor < salarioMinimo) {
+                    valor = salarioMinimo;
+                } else if (valor > valorLimite) {
+                    valor = valorLimite;
+                }
+
+                if (mesesTrabalhados <= 11) {
+                    parcelas = 3;
+                } else if (mesesTrabalhados <= 23) {
+                    parcelas = 4;
+                } else {
+                    parcelas = 5;
+                }
+            }
+            $('#resultadoPositivo').toggle();
+
+            $('#numeroParcelas').text(parcelas);
+            $('#valor').text(valor);
+
+
+        });
+
+        /*
+         * This piece of code was taken from
+         * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/round
+         */
+
+        /**
+         * Decimal adjustment of a number.
+         *
+         * @param	{String}	type	The type of adjustment.
+         * @param	{Number}	value	The number.
+         * @param	{Integer}	exp		The exponent (the 10 logarithm of the adjustment base).
+         * @returns	{Number}			The adjusted value.
+         */
+        function decimalAdjust(type, value, exp) {
+            // If the exp is undefined or zero...
+            if (typeof exp === 'undefined' || +exp === 0) {
+                return Math[type](value);
+            }
+            value = +value;
+            exp = +exp;
+            // If the value is not a number or the exp is not an integer...
+            if (isNaN(value) || !(typeof exp === 'number' && exp % 1 === 0)) {
+                return NaN;
+            }
+            // Shift
+            value = value.toString().split('e');
+            value = Math[type](+(value[0] + 'e' + (value[1] ? (+value[1] - exp) : -exp)));
+            // Shift back
+            value = value.toString().split('e');
+            return +(value[0] + 'e' + (value[1] ? (+value[1] + exp) : exp));
+        }
+
+        // Decimal round
+        if (!Math.round10) {
+            Math.round10 = function (value, exp) {
+                return decimalAdjust('round', value, exp);
+            };
+        }
+        // Decimal floor
+        if (!Math.floor10) {
+            Math.floor10 = function (value, exp) {
+                return decimalAdjust('floor', value, exp);
+            };
+        }
+        // Decimal ceil
+        if (!Math.ceil10) {
+            Math.ceil10 = function (value, exp) {
+                return decimalAdjust('ceil', value, exp);
+            };
+        }
+    </script>
+
+
+</body>
+
+</html>
